@@ -35,10 +35,10 @@ def calculate_dot_product(vector1, vector2):
 # Return a dictionary of similar n-gram
 # The key will be the length of the n-gram
 # The value will be a list of all similar n-grams
-def get_similar_n_grams(document1, document2, start_index):
+def get_similar_n_grams(document1, document2, base_n_gram_size):
     similar_n_grams = {}
 
-    i = start_index
+    i = base_n_gram_size
 
     while True:
         document1_n_grams = set(create_n_grams(document1, i))
@@ -51,7 +51,6 @@ def get_similar_n_grams(document1, document2, start_index):
             i += 1
         else:
             return similar_n_grams
-
 
 # Given two vectors, it will calculate the cosine value between the two vectors
 def calculate_cosine_value(vector1, vector2):
@@ -95,6 +94,7 @@ vector1 = create_vector(all_keys, document1_n_grams)
 vector2 = create_vector(all_keys, document2_n_grams)
 
 print(calculate_cosine_value(vector1, vector2))
+print(calculate_jaccard_index(document1, document2))
 data = get_similar_n_grams(document1, document2, 3)
 
 with open('test.json', 'w') as file:
