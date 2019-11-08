@@ -1,53 +1,67 @@
 import collections
 import json
 import string
+import sys
 
-def preprocess(doc):
-    text = open(doc, 'r')
-    text_str = text.read()
-    text_str = text_str.replace('&quot', '').translate(str.maketrans('', '', string.punctuation)).lower()
-    words = text_str.split()
-    return words
 
-# Count word frequencies for a doc
-def get_frequencies(words, allwords):
-    A = {}
-    for key in allwords:
-        A[key] = 0
+# Preprocess a document by removing puntuation and digits, and converting the text to lowercase
+# Will return a list of words
+def preprocess(document):
+    return open(document, 'r').read().translate(str.maketrans('', '', string.punctuation)).translate(str.maketrans('', '', string.digits)).lower().split()
+
+# Count word frequencies for a document
+def count_words(all_words, document_words):
+    word_frequencies = {}
+
+    for key in all_words:
+        word_frequencies[key] = 0
     
-    for w in words:
-        A[w] += 1
+    for word in document_words:
+        word_frequencies[word] += 1
     
-    return A
+    return word_frequencies
 
-# Calculate vector length
-def get_vector_len(A):
-    l = 0
-    for value in A.values():
-        l += value ** 2
-    return l ** 0.5
+# Given two vectors, it will calculate the dot product between the two vectors and return the result
+def calculate_dot_product(vector1, vector2):
+    dot_product = 0
 
-def calculate_dot_product(v1, v2):
-    result = 0
-    for key, value in v1.items():
-        result += value * v2[key]
-    return result
+    for key in vector1.keys():
+        dot_product += vector1[key] * vector2[key]
 
-def get_cos(dot_product, l1, l2):
-    return dot_product/(l1 * l2)
+    return dot_product
 
-doc1 = 'dna_kr.txt'
-doc2 = 'dna_en.txt'
+# Given two vectors, it will calculate the cosine value between the two vectors
+def calculate_cosine_value(document1, document2):
+    # Create a set of all the words between both documents
+    all_words = set(document1 + document2)
 
-pp1 = preprocess(doc1)
-pp2 = preprocess(doc2)
+    # Create vectors for each document where each entry is the frequency of a word
+    vector1 = count_words(all_words, document1)
+    vector2 = count_words(all_words, document2)
 
-# Set of all unique words between both docs
-allwords = set(pp1 + pp2)
+    vector1_dot_vector2 = calculate_dot_product(vector1, vector2)
+    vector1_length = calculate_dot_product(vector1, vector1) ** 0.5
+    vector2_length = calculate_dot_product(vector2, vector2) ** 0.5
 
-doc1Freq = get_frequencies(pp1, allwords)
-doc2Freq = get_frequencies(pp2, allwords)
+    return vector1_dot_vector2 / (vector1_length * vector2_length)
 
-dot_product = calculate_dot_product(doc1Freq, doc2Freq)
+# Calculate the jiccard index by the formula v = |AnB|/ |AuB|
+def calculate_jaccard_index(document1, document2):
+    set1 = set(document1)
+    set2 = set(document2)
 
-print('cos: ', get_cos(dot_product, get_vector_len(doc1Freq), get_vector_len(doc2Freq)))
+    return len(set1 & set2) / len(set1 | set2)
+
+
+# Preprocess each document
+document1 = preprocess(sys.argv[1])
+document2 = preprocess(sys.argv[2])
+
+# Calculate the cosine between the two document vectors
+cosine_value = calculate_cosine_value(document1, document2)
+
+# Calcualte the jiccard index between two documents
+jiccard_index = calculate_jaccard_index(document1, document2)
+
+print('The cosine value is: ', cosine_value)
+print('The Jiccard Index is: ', jiccard_index)
