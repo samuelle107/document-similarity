@@ -1,2 +1,2 @@
 #!/bin/bash
-python calculate_similarity.py dna_en.txt dna_kr.txt
+python3 calculate_similarity.py object_document.txt query_document_$1.txt
